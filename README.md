@@ -1,12 +1,12 @@
 # Palette
 
-`palette` is a Blender add-on that applies terminal color schemes as Blender UI themes.
-
-It loads ANSI-style palettes from existing terminal theme repositories, maps them to Blender’s theme system, and applies them immediately for preview or export.
-
 <p align="center">
   <img src="assets/graphic.png" alt="palette" width="720">
 </p>
+
+`palette` is a Blender add-on that applies terminal color schemes as Blender UI themes.
+
+It loads ANSI-style palettes from existing terminal theme repositories, maps them to Blender’s theme system, and applies them immediately for preview or export.
 
 ---
 
