@@ -5,7 +5,7 @@
 It loads ANSI-style palettes from existing terminal theme repositories, maps them to Blender’s theme system, and applies them immediately for preview or export.
 
 <p align="center">
-  <img src="assets/palette-header.png" alt="palette" width="720">
+  <img src="assets/graphic.png" alt="palette" width="720">
 </p>
 
 ---
