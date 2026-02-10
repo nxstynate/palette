@@ -6,6 +6,8 @@
 
 `palette` is a Blender add-on that applies terminal color schemes as Blender UI themes.
 
+Have access to over 600 themes!!!
+
 It loads ANSI-style palettes from existing terminal theme repositories, maps them to Blender’s theme system, and applies them immediately for preview or export.
 
 ---
