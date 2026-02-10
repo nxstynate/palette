@@ -5,13 +5,13 @@ Palette for Blender
 Import iTerm2 color schemes (.itermcolors) and apply them as Blender themes.
 Maps ANSI terminal colors into Blender's UI color surface via HSL/HSV derivation.
 
-Author: BlackoutLLC
+Author: NXSTYNATE
 License: GPL-3.0
 """
 
 bl_info = {
     "name": "Palette",
-    "author": "BlackoutLLC",
+    "author": "NXSTYNATE",
     "version": (1, 1, 0),
     "blender": (3, 0, 0),
     "location": "Edit > Preferences > Themes",
