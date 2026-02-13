@@ -12,8 +12,8 @@ License: GPL-3.0
 bl_info = {
     "name": "Palette",
     "author": "NXSTYNATE",
-    "version": (1, 1, 0),
-    "blender": (3, 0, 0),
+    "version": (1, 1, 1),
+    "blender": (4, 5, 0),
     "location": "Edit > Preferences > Themes",
     "description": "Import iTerm2 color schemes and apply them as Blender themes",
     "category": "Interface",
