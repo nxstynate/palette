@@ -205,6 +205,29 @@ def _populate_palette_from_iterm(wm, iterm_theme):
     wm.iterm_palette_theme_name = iterm_theme.get("name", "Unknown")
 
 
+def _snapshot_current_theme(wm):
+    """Save the current Blender theme to a temp XML file for later restore."""
+    import tempfile
+    try:
+        from rna_xml import rna2xml
+        theme = bpy.context.preferences.themes[0]
+        fd, path = tempfile.mkstemp(suffix=".xml", prefix="palette_snapshot_")
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write("<bpy>\n")
+            rna2xml(
+                f.write,
+                root_rna=theme,
+                method='ATTR',
+                root_ident="  ",
+                ident_val="  ",
+            )
+            f.write("</bpy>\n")
+        wm["_iterm_theme_snapshot"] = path
+    except Exception:
+        # If snapshot fails, store empty — reset will fall back to default
+        wm["_iterm_theme_snapshot"] = ""
+
+
 def _build_iterm_theme_from_palette(wm):
     """Reconstruct an iTerm theme dict from the editable palette."""
     theme = {
@@ -299,6 +322,10 @@ class ITERM_OT_apply_theme(Operator):
 
         wm = context.window_manager
         addon_prefs = context.preferences.addons[__package__].preferences
+
+        # Snapshot original theme before first apply
+        if "_iterm_theme_snapshot" not in wm:
+            _snapshot_current_theme(wm)
 
         idx = self.theme_index if self.theme_index >= 0 else wm.iterm_theme_active
         if idx < 0 or idx >= len(wm.iterm_themes):
@@ -599,8 +626,46 @@ class ITERM_OT_preview_swatches(Operator):
         return {'FINISHED'}
 
 
-# =========================================================================
-# UI List
+class ITERM_OT_reset_theme(Operator):
+    """Reset Blender's theme back to what it was before Palette changed it"""
+    bl_idname = "iterm_theme.reset_theme"
+    bl_label = "Reset to Initial Theme"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        wm = context.window_manager
+        snapshot_path = wm.get("_iterm_theme_snapshot", "")
+
+        if not snapshot_path or not os.path.isfile(snapshot_path):
+            # No snapshot saved — reset to Blender factory default
+            bpy.ops.preferences.reset_default_theme()
+            self.report({'INFO'}, "Reset to Blender default theme")
+            return {'FINISHED'}
+
+        try:
+            bpy.ops.script.execute_preset(
+                filepath=snapshot_path,
+                menu_idname="USERPREF_MT_interface_theme_presets",
+            )
+            self.report({'INFO'}, "Restored initial theme")
+        except Exception:
+            # execute_preset failed — try direct rna_xml approach
+            try:
+                import rna_xml
+                preset_xml_map = (
+                    ("bpy.context.preferences.themes[0]", "Theme"),
+                )
+                rna_xml.xml_file_run(context, snapshot_path, preset_xml_map)
+                # Force UI redraw
+                for window in context.window_manager.windows:
+                    for area in window.screen.areas:
+                        area.tag_redraw()
+                self.report({'INFO'}, "Restored initial theme")
+            except Exception as e:
+                bpy.ops.preferences.reset_default_theme()
+                self.report({'WARNING'}, f"Snapshot restore failed, reset to default: {e}")
+
+        return {'FINISHED'}
 # =========================================================================
 
 class ITERM_UL_theme_list(UIList):
@@ -620,94 +685,7 @@ class ITERM_UL_theme_list(UIList):
 
 
 
-class ITERM_PT_theme_browser(Panel):
-    """Palette — Preferences > Themes"""
-    bl_label = "Palette"
-    bl_idname = "ITERM_PT_theme_browser"
-    bl_space_type = 'PREFERENCES'
-    bl_region_type = 'WINDOW'
-    bl_category = "Themes"
 
-    def draw(self, context):
-        layout = self.layout
-        wm = context.window_manager
-
-        # Search (fuzzy match, press Enter or click button)
-        row = layout.row(align=True)
-        row.prop(wm, "iterm_theme_search", text="", icon='VIEWZOOM')
-        row.operator("iterm_theme.search", text="", icon='VIEWZOOM')
-
-        # Theme list
-        row = layout.row()
-        row.template_list(
-            "ITERM_UL_theme_list", "",
-            wm, "iterm_themes",
-            wm, "iterm_theme_active",
-            rows=12,
-        )
-
-        # Theme count
-        if wm.iterm_themes:
-            layout.label(text=f"{len(wm.iterm_themes)} themes available")
-
-        # Primary actions
-        col = layout.column(align=True)
-        col.scale_y = 1.3
-        col.operator("iterm_theme.apply_theme", text="Keep Theme", icon='CHECKMARK')
-
-        row = layout.row(align=True)
-        row.operator("iterm_theme.load_palette", text="Edit Colors", icon='BRUSHES_ALL')
-        row.operator("iterm_theme.export_xml", text="Export XML", icon='EXPORT')
-
-        layout.separator()
-        layout.operator("iterm_theme.refresh_repo", text="Refresh List", icon='FILE_REFRESH')
-
-
-class ITERM_PT_palette_editor(Panel):
-    """Palette editor sub-panel"""
-    bl_label = "Palette Editor"
-    bl_idname = "ITERM_PT_palette_editor"
-    bl_space_type = 'PREFERENCES'
-    bl_region_type = 'WINDOW'
-    bl_category = "Themes"
-    bl_parent_id = "ITERM_PT_theme_browser"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        return context.window_manager.iterm_palette_loaded
-
-    def draw(self, context):
-        layout = self.layout
-        wm = context.window_manager
-
-        layout.label(text=f"Editing: {wm.iterm_palette_theme_name}", icon='BRUSHES_ALL')
-        layout.separator()
-
-        for i, item in enumerate(wm.iterm_palette):
-            row = layout.row(align=True)
-            row.label(text=item.label)
-            row.prop(item, "color", text="")
-            row.prop(item, "hex_value", text="")
-
-        layout.separator()
-
-        # Swap
-        box = layout.box()
-        box.label(text="Swap Colors", icon='UV_SYNC_SELECT')
-        row = box.row(align=True)
-        row.prop(wm, "iterm_palette_swap_a", text="Slot A")
-        row.prop(wm, "iterm_palette_swap_b", text="Slot B")
-        box.operator("iterm_theme.swap_colors", text="Swap", icon='UV_SYNC_SELECT')
-
-        layout.separator()
-
-        col = layout.column(align=True)
-        col.scale_y = 1.4
-        col.operator("iterm_theme.apply_custom", text="Apply Custom Palette", icon='CHECKMARK')
-
-        row = layout.row()
-        row.operator("iterm_theme.reset_palette", text="Reset to Original", icon='LOOP_BACK')
 
 
 # =========================================================================
@@ -726,9 +704,8 @@ classes = (
     ITERM_OT_export_theme_xml,
     ITERM_OT_search_themes,
     ITERM_OT_preview_swatches,
+    ITERM_OT_reset_theme,
     ITERM_UL_theme_list,
-    ITERM_PT_theme_browser,
-    ITERM_PT_palette_editor,
 )
 
 
@@ -753,6 +730,11 @@ def _on_theme_active_update(self, context):
         return
 
     wm = context.window_manager
+
+    # Snapshot the user's original theme on first preview
+    if "_iterm_theme_snapshot" not in wm:
+        _snapshot_current_theme(wm)
+
     idx = wm.iterm_theme_active
     if idx < 0 or idx >= len(wm.iterm_themes):
         return
