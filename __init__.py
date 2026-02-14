@@ -562,8 +562,13 @@ class ITERM_OT_export_theme_xml(Operator):
         theme_item = wm.iterm_themes[idx]
 
         try:
-            # Apply theme first so the live data matches what we export
-            iterm_theme = iterm_parser.parse_theme_file(theme_item.path)
+            # If the palette editor has custom colors, use those.
+            # Otherwise fall back to the original theme file.
+            if wm.iterm_palette_loaded and len(wm.iterm_palette) > 0:
+                iterm_theme = _build_iterm_theme_from_palette(wm)
+            else:
+                iterm_theme = iterm_parser.parse_theme_file(theme_item.path)
+
             palette = blender_theme_map.build_palette(iterm_theme)
             apply.apply_theme_to_blender(palette)
 
