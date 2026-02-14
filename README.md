@@ -1,9 +1,9 @@
 # Palette
 
-<p align="center">
-  <img src="assets/graphic.png" alt="palette" width="720">
-</p>
-
+<!-- <p align="center"> -->
+<!--   <img src="assets/graphic.png" alt="palette" width="720"> -->
+<!-- </p> -->
+[![Palette Demo](assets/graphic.png)](https://www.youtube.com/watch?v=cgVgi_flVYI)
 **Access over 600 terminal color schemes as Blender themes.**
 
 Palette is a Blender add-on that converts terminal color schemes into full Blender UI themes. It sources palettes from public repositories at the press of a button, maps them to Blender's entire theme system, and lets you preview, edit, and apply them instantly.
