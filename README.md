@@ -104,6 +104,16 @@ Each theme retains its original name and attribution. Please refer to the respec
 
 ---
 
+## License
+
+Palette is licensed under the **GNU General Public License v3.0** (GPL-3.0-or-later).
+
+This means you are free to use, modify, and distribute this software, provided that any derivative works are also released under the same license. This is consistent with Blender's own licensing requirements for addons that use the `bpy` module.
+
+See the [LICENSE](LICENSE) file for the full license text.
+
+---
+
 ## Support
 
 If you encounter issues or have suggestions, please open an issue on the project repository.
