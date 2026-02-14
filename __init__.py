@@ -63,6 +63,7 @@ _submodules = [
     "xml_writer",
     "apply",
     "repo",
+    "popular",
     "prefs",
 ]
 for _mod_name in _submodules:
@@ -313,7 +314,9 @@ class ITERM_OT_refresh_repo(Operator):
                 )
 
             wm.iterm_themes.clear()
-            for t in index.get("themes", []):
+            themes_list = index.get("themes", [])
+            themes_list = _sort_themes(themes_list, wm.iterm_theme_sort)
+            for t in themes_list:
                 item = wm.iterm_themes.add()
                 item.name = t["name"]
                 item.path = t["path"]
@@ -601,6 +604,7 @@ class ITERM_OT_search_themes(Operator):
 
         all_themes = repo.get_theme_list()
         filtered = repo.search_themes(query, all_themes)
+        filtered = _sort_themes(filtered, wm.iterm_theme_sort)
 
         wm.iterm_themes.clear()
         for t in filtered:
@@ -790,6 +794,9 @@ def _on_theme_search_update(self, context):
     all_themes = repo.get_theme_list()
     filtered = repo.search_themes(query, all_themes)
 
+    # Sort based on current sort mode
+    filtered = _sort_themes(filtered, wm.iterm_theme_sort)
+
     wm.iterm_themes.clear()
     for t in filtered:
         item = wm.iterm_themes.add()
@@ -797,6 +804,31 @@ def _on_theme_search_update(self, context):
         item.path = t["path"]
 
     wm.iterm_theme_count = len(wm.iterm_themes)
+
+
+def _on_theme_sort_update(self, context):
+    """Re-sort the current list when sort mode changes."""
+    _on_theme_search_update(self, context)
+
+
+def _sort_themes(themes, sort_mode):
+    """Sort theme list based on the selected mode."""
+    if sort_mode == 'POPULAR':
+        from .popular import POPULAR_THEMES
+        def _pop_rank(name):
+            name_lower = name.lower()
+            for i, pop in enumerate(POPULAR_THEMES):
+                if pop in name_lower:
+                    return i
+            return len(POPULAR_THEMES)  # non-popular goes after all popular
+        # Popular themes ranked by their position in the curated list,
+        # non-popular themes alphabetically after
+        return sorted(themes, key=lambda t: (_pop_rank(t["name"]), t["name"].lower()))
+    elif sort_mode == 'AZ':
+        return sorted(themes, key=lambda t: t["name"].lower())
+    elif sort_mode == 'ZA':
+        return sorted(themes, key=lambda t: t["name"].lower(), reverse=True)
+    return themes
 
 
 def register():
@@ -817,6 +849,17 @@ def register():
         name="Search", default="",
         description="Filter themes by name (fuzzy match)",
         update=_on_theme_search_update,
+    )
+    bpy.types.WindowManager.iterm_theme_sort = EnumProperty(
+        name="Sort",
+        description="Sort order for the theme list",
+        items=[
+            ('POPULAR', "Popular First", "Show well-known themes at the top"),
+            ('AZ', "A → Z", "Sort alphabetically"),
+            ('ZA', "Z → A", "Sort reverse alphabetically"),
+        ],
+        default='POPULAR',
+        update=_on_theme_sort_update,
     )
     bpy.types.WindowManager.iterm_theme_count = IntProperty(default=0)
 
@@ -844,6 +887,7 @@ def unregister():
     del bpy.types.WindowManager.iterm_palette
 
     del bpy.types.WindowManager.iterm_theme_count
+    del bpy.types.WindowManager.iterm_theme_sort
     del bpy.types.WindowManager.iterm_theme_search
     del bpy.types.WindowManager.iterm_theme_active
     del bpy.types.WindowManager.iterm_themes

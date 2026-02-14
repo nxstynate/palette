@@ -147,8 +147,10 @@ class ItermThemeImporterPrefs(bpy.types.AddonPreferences):
 
             # Only show browser controls when themes are loaded
             if wm.iterm_themes:
-                # Search
-                box.prop(wm, "iterm_theme_search", text="", icon='VIEWZOOM')
+                # Search + Sort on one row
+                row = box.row(align=True)
+                row.prop(wm, "iterm_theme_search", text="", icon='VIEWZOOM')
+                row.prop(wm, "iterm_theme_sort", text="")
 
                 # Theme list
                 box.template_list(
