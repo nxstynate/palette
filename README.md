@@ -1,6 +1,6 @@
 # Palette
 
-**Click Image to Watch Video**
+### Watch video
 [![Palette Demo](assets/graphic.png)](https://www.youtube.com/watch?v=cgVgi_flVYI)
 **Click Image to Watch Video**
 
