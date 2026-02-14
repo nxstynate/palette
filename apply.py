@@ -99,87 +99,87 @@ def apply_theme_to_blender(palette):
         _set_color(wcol, 'text_sel', (*text_sel[:3], 1.0))
 
     set_wcol(ui.wcol_regular,
-             p["widget_outline"], p["widget_bg"], p["ui_accent"],
-             p["ui_accent"], p["widget_text"], p["ui_accent_text"])
+             p["widget_outline"], p["widget_bg"], p["ui_accent_func"],
+             p["ui_accent_func"], p["widget_text"], p["ui_accent_func_text"])
 
     set_wcol(ui.wcol_tool,
-             p["widget_outline"], p["button_bg"], p["ui_accent"],
-             p["ui_accent"], p["button_text"], p["ui_accent_text"])
+             p["widget_outline"], p["button_bg"], p["ui_accent_func"],
+             p["ui_accent_func"], p["button_text"], p["ui_accent_func_text"])
 
     set_wcol(ui.wcol_toolbar_item,
              p["widget_outline"], p["toolbar_bg"], p["toolbar_sel"],
-             p["option_check"], p["toolbar_text"], p["ui_accent_text"])
+             p["option_check"], p["toolbar_text"], p["ui_accent_func_text"])
 
     set_wcol(ui.wcol_radio,
-             p["widget_outline"], p["widget_bg"], p["ui_accent"],
-             p["option_check"], p["widget_text"], p["ui_accent_text"])
+             p["widget_outline"], p["widget_bg"], p["ui_accent_func"],
+             p["option_check"], p["widget_text"], p["ui_accent_func_text"])
 
     set_wcol(ui.wcol_text,
              p["input_border"], p["input_bg"], p["ui_selection"],
-             p["ui_cursor"], p["input_text"], p["ui_selection_text"])
+             p["ui_text_sel_highlight"], p["input_text"], p["ui_selection_text"])
 
     # Checkbox/option: item = checkmark color, must pop against both states
     set_wcol(ui.wcol_option,
-             p["widget_outline"], p["widget_bg"], p["ui_accent"],
-             p["option_check"], p["widget_text"], p["ui_accent_text"])
+             p["widget_outline"], p["widget_bg"], p["ui_accent_func"],
+             p["option_check"], p["widget_text"], p["ui_accent_func_text"])
 
     set_wcol(ui.wcol_toggle,
-             p["widget_outline"], p["widget_bg"], p["ui_accent"],
-             p["option_check"], p["widget_text"], p["ui_accent_text"])
+             p["widget_outline"], p["widget_bg"], p["ui_accent_func"],
+             p["option_check"], p["widget_text"], p["ui_accent_func_text"])
 
     set_wcol(ui.wcol_num,
              p["input_border"], p["input_bg"], p["ui_selection"],
-             p["ui_accent"], p["input_text"], p["ui_selection_text"])
+             p["ui_accent_func"], p["input_text"], p["ui_selection_text"])
 
     set_wcol(ui.wcol_numslider,
              p["input_border"], p["input_bg"], p["ui_selection"],
-             p["ui_accent"], p["input_text"], p["ui_selection_text"])
+             p["ui_accent_func"], p["input_text"], p["ui_selection_text"])
 
     set_wcol(ui.wcol_box,
              p["ui_border"], p["ui_card"], p["ui_selection"],
-             p["ui_accent"], p["widget_text"], p["ui_selection_text"])
+             p["ui_accent_func"], p["widget_text"], p["ui_selection_text"])
 
     set_wcol(ui.wcol_menu,
-             p["ui_border"], p["ui_popup"], p["ui_accent"],
-             p["option_check"], p["widget_text"], p["ui_accent_text"])
+             p["ui_border"], p["ui_popup"], p["menu_inner_sel"],
+             p["menu_accent"], p["widget_text"], p["menu_text_sel"])
 
     set_wcol(ui.wcol_pulldown,
-             p["ui_border"], p["ui_popup"], p["ui_accent"],
-             p["option_check"], p["widget_text"], p["ui_accent_text"])
+             p["ui_border"], p["ui_popup"], p["menu_inner_sel"],
+             p["menu_accent"], p["widget_text"], p["menu_text_sel"])
 
     set_wcol(ui.wcol_menu_back,
-             p["ui_border"], p["ui_popup"], p["ui_accent"],
-             p["ui_accent"], p["widget_text"], p["ui_accent_text"])
+             p["ui_border"], p["ui_popup"], p["menu_inner_sel"],
+             p["menu_accent"], p["widget_text"], p["menu_text_sel"])
 
     set_wcol(ui.wcol_menu_item,
-             p["ui_border"], p["ui_popup"], p["ui_accent"],
-             p["ui_accent"], p["widget_text"], p["ui_accent_text"])
+             p["ui_border"], p["ui_popup"], p["menu_inner_sel"],
+             p["menu_accent"], p["widget_text"], p["menu_text_sel"])
 
     set_wcol(ui.wcol_tooltip,
              p["ui_border"], p["ui_card"], p["ui_selection"],
-             p["ui_accent"], p["widget_text"], p["ui_selection_text"])
+             p["ui_accent_func"], p["widget_text"], p["ui_selection_text"])
 
     set_wcol(ui.wcol_scroll,
              p["ui_border"], p["scroll_bg"], p["scroll_handle_hover"],
              p["scroll_handle"], p["widget_text"], p["widget_text"])
 
     set_wcol(ui.wcol_progress,
-             p["ui_border"], p["widget_bg"], p["ui_accent"],
-             p["ui_accent"], p["widget_text"], p["ui_accent_text"])
+             p["ui_border"], p["widget_bg"], p["ui_accent_func"],
+             p["ui_accent_func"], p["widget_text"], p["ui_accent_func_text"])
 
     set_wcol(ui.wcol_list_item,
-             p["ui_border"], p["ui_bg"], p["ui_accent"],
-             p["ui_accent"], p["widget_text"], p["ui_accent_text"])
+             p["ui_border"], p["ui_bg"], p["list_highlight"],
+             p["ui_accent_func"], p["widget_text"], p["list_highlight_text"])
 
     set_wcol(ui.wcol_tab,
-             p["tab_outline"], p["tab_inactive_bg"], p["tab_active_bg"],
-             p["ui_accent"], p["ui_text_muted"], p["widget_text"])
+             p["tab_outline"], p["tab_inactive_bg"], p["tab_sel_accent"],
+             p["ui_accent_func"], p["ui_text_muted"], p["tab_sel_text"])
 
     # wcol_pie_menu if available
     try:
         set_wcol(ui.wcol_pie_menu,
-                 p["ui_border"], p["ui_popup"], p["ui_accent"],
-                 p["option_check"], p["widget_text"], p["ui_accent_text"])
+                 p["ui_border"], p["ui_popup"], p["pie_highlight"],
+                 p["pie_item"], p["widget_text"], p["pie_highlight_text"])
     except AttributeError:
         pass
 
@@ -424,12 +424,12 @@ def apply_theme_to_blender(palette):
     set_space_generic(theme.outliner.space)
     o = theme.outliner
     _set_color(o, 'match', p["ui_accent"])
-    _set_color(o, 'selected_highlight', p["ui_selection"])
-    _set_color(o, 'active', (*p["ui_accent"], 0.3))
-    _set_color(o, 'selected_object', (*p["obj_selected"], 0.3))
-    _set_color(o, 'active_object', (*p["obj_active"], 0.3))
-    _set_color(o, 'edited_object', (*p["success"], 0.3))
-    _set_color(o, 'row_alternate', (*p["ui_panel"], 0.5))
+    _set_color(o, 'selected_highlight', p["list_highlight"])
+    _set_color(o, 'active', (*p["list_highlight"][:3], 0.45))
+    _set_color(o, 'selected_object', (*p["obj_selected"][:3], 0.3))
+    _set_color(o, 'active_object', (*p["outliner_active_obj"][:3], 0.25))
+    _set_color(o, 'edited_object', (*p["success"][:3], 0.3))
+    _set_color(o, 'row_alternate', (*p["row_alternate"][:3], 0.5))
 
     # =====================================================================
     # TEXT EDITOR
@@ -629,7 +629,7 @@ def apply_theme_to_blender(palette):
     # =====================================================================
     set_space_generic(theme.file_browser.space)
     _set_color(theme.file_browser, 'selected_file', p["ui_selection"])
-    _set_color(theme.file_browser, 'row_alternate', (*p["ui_panel"], 0.5))
+    _set_color(theme.file_browser, 'row_alternate', (*p["row_alternate"][:3], 0.5))
 
     # =====================================================================
     # TOPBAR
@@ -649,7 +649,7 @@ def apply_theme_to_blender(palette):
     # =====================================================================
     try:
         set_space_generic(theme.spreadsheet.space)
-        _set_color(theme.spreadsheet, 'row_alternate', (*p["ui_panel"], 0.5))
+        _set_color(theme.spreadsheet, 'row_alternate', (*p["row_alternate"][:3], 0.5))
     except AttributeError:
         pass
 
@@ -702,7 +702,7 @@ def apply_theme_to_blender(palette):
     _set_color(se, 'active_strip', (*p["obj_active"], 0.5))
     _set_color(se, 'selected_strip', (*p["obj_selected"], 0.5))
     _set_color(se, 'time_scrub_background', (*p["ui_panel"], 0.75))
-    _set_color(se, 'row_alternate', (*p["ui_panel"], 0.5))
+    _set_color(se, 'row_alternate', (*p["row_alternate"][:3], 0.5))
     _set_color(se, 'window_sliders', p["ui_accent"])
 
     # =====================================================================

@@ -12,8 +12,8 @@ License: GPL-3.0
 bl_info = {
     "name": "Palette",
     "author": "NXSTYNATE",
-    "version": (1, 1, 1),
-    "blender": (4, 5, 0),
+    "version": (1, 1, 0),
+    "blender": (3, 0, 0),
     "location": "Edit > Preferences > Themes",
     "description": "Import iTerm2 color schemes and apply them as Blender themes",
     "category": "Interface",
@@ -209,7 +209,11 @@ def _snapshot_current_theme(wm):
     """Save the current Blender theme to a temp XML file for later restore."""
     import tempfile
     try:
-        from rna_xml import rna2xml
+        try:
+            from _rna_xml import rna2xml
+        except ImportError:
+            from rna_xml import rna2xml
+
         theme = bpy.context.preferences.themes[0]
         fd, path = tempfile.mkstemp(suffix=".xml", prefix="palette_snapshot_")
         with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -223,8 +227,8 @@ def _snapshot_current_theme(wm):
             )
             f.write("</bpy>\n")
         wm["_iterm_theme_snapshot"] = path
-    except Exception:
-        # If snapshot fails, store empty — reset will fall back to default
+    except Exception as ex:
+        print(f"[Palette] Theme snapshot failed: {ex}")
         wm["_iterm_theme_snapshot"] = ""
 
 
@@ -651,7 +655,10 @@ class ITERM_OT_reset_theme(Operator):
         except Exception:
             # execute_preset failed — try direct rna_xml approach
             try:
-                import rna_xml
+                try:
+                    import _rna_xml as rna_xml
+                except ImportError:
+                    import rna_xml
                 preset_xml_map = (
                     ("bpy.context.preferences.themes[0]", "Theme"),
                 )
