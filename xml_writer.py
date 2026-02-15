@@ -35,7 +35,13 @@ def export_current_theme_xml(filepath):
     Returns the filepath written.
     """
     import bpy
-    from rna_xml import rna2xml
+
+    # Blender 5.0 made rna_xml a private module (_rna_xml).
+    # Try both import paths for compatibility.
+    try:
+        from rna_xml import rna2xml
+    except ModuleNotFoundError:
+        from _rna_xml import rna2xml
 
     theme = bpy.context.preferences.themes[0]
 
