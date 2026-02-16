@@ -22,5 +22,5 @@ copyright = [
 ]
 
 [permissions]
-network = "Sources color scheme files from public GitHub repositories (iTerm2-Color-Schemes, Gogh) when user clicks Load Themes"
-files = "Caches downloaded theme files locally and exports Blender theme XML files"
+network = "Downloads color schemes from GitHub repositories"
+files = "Caches themes locally and exports Blender XML files"
