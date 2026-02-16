@@ -25,16 +25,6 @@ Author: NXSTYNATE
 License: GPL-3.0
 """
 
-bl_info = {
-    "name": "Palette",
-    "author": "NXSTYNATE",
-    "version": (1, 1, 1),
-    "blender": (4, 5, 0),
-    "location": "Edit > Preferences > Themes",
-    "description": "Load 600+ terminal palettes and convert them into complete Blender UI themes with instant preview and editing.",
-    "category": "Interface",
-}
-
 import bpy
 import os
 import sys
@@ -304,6 +294,12 @@ class ITERM_OT_refresh_repo(Operator):
                     return {'CANCELLED'}
                 index = repo.index_local_folder(folder)
             else:
+                # Respect Blender's online access setting (required for extensions platform)
+                if not bpy.app.online_access:
+                    self.report({'ERROR'},
+                        "Online access is disabled. Enable in Preferences > System > Network.")
+                    return {'CANCELLED'}
+
                 enabled = addon_prefs.get_enabled_sources()
                 if not enabled:
                     self.report({'ERROR'}, "No sources enabled. Check add-on preferences.")

@@ -23,7 +23,7 @@ from bpy.props import StringProperty, EnumProperty, BoolProperty
 
 
 class ItermThemeImporterPrefs(bpy.types.AddonPreferences):
-    bl_idname = "palette"
+    bl_idname = __package__
 
     # --- Foldable section states ---
     show_browser: BoolProperty(

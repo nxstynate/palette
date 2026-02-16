@@ -1,0 +1,26 @@
+schema_version = "1.0.0"
+
+id = "palette"
+version = "1.1.3"
+name = "Palette"
+tagline = "Load 600+ terminal palettes as complete Blender UI themes"
+maintainer = "NXSTYNATE"
+type = "add-on"
+
+website = "https://github.com/nxstynate/palette"
+
+tags = ["User Interface"]
+
+blender_version_min = "4.5.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+copyright = [
+  "2025 NXSTYNATE",
+]
+
+[permissions]
+network = "Sources color scheme files from public GitHub repositories (iTerm2-Color-Schemes, Gogh) when user clicks Load Themes"
+files = "Caches downloaded theme files locally and exports Blender theme XML files"
