@@ -14,7 +14,7 @@ Palette is a Blender add-on that converts terminal color schemes into full Blend
 
 ### Install
 
-1. Download the `palette_v3.zip` file.
+1. Download the `palette_<latest_version>.zip` file.
 2. In Blender, go to **Edit → Preferences → Add-ons**.
 3. Click **Install** and select the zip file.
 4. Enable the **Palette** add-on by checking the box next to it.
@@ -99,7 +99,7 @@ Each theme retains its original name and attribution. Please refer to the respec
 
 ## Requirements
 
-- Blender 3.0 or later
+- Blender 4.5 or later
 - Internet connection (for initial theme download only)
 
 ---
