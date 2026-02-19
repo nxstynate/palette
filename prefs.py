@@ -75,12 +75,6 @@ class ItermThemeImporterPrefs(bpy.types.AddonPreferences):
         default=False,
     )
 
-    export_xml: BoolProperty(
-        name="Export XML on Apply",
-        description="Also export a Blender theme XML file when applying",
-        default=False,
-    )
-
     live_preview: BoolProperty(
         name="Live Preview",
         description="Preview themes instantly when clicking in the list (no disk writes)",
@@ -166,7 +160,7 @@ class ItermThemeImporterPrefs(bpy.types.AddonPreferences):
                 row = box.row(align=True)
                 row.scale_y = 1.3
                 row.operator("iterm_theme.apply_theme", text="Apply", icon='CHECKMARK')
-                row.operator("iterm_theme.reset_theme", text="Reset", icon='LOOP_BACK')
+                row.operator("preferences.reset_default_theme", text="Reset", icon='LOOP_BACK')
 
                 # Save reminder
                 box.separator()
@@ -223,13 +217,11 @@ class ItermThemeImporterPrefs(bpy.types.AddonPreferences):
             # On-apply behavior
             box.separator()
             box.label(text="On Apply:")
-            row = box.row()
-            row.prop(self, "save_on_apply")
-            row.prop(self, "export_xml")
+            box.prop(self, "save_on_apply")
 
             # Export
             box.separator()
-            box.operator("iterm_theme.export_xml", text="Export XML", icon='EXPORT')
+            box.operator("iterm_theme.export_xml", text="Export Theme XML", icon='EXPORT')
 
             # Theme sources
             box.separator()

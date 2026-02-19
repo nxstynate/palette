@@ -25,10 +25,10 @@ Author: NXSTYNATE
 License: GPL-3.0
 """
 
+_needs_reload = "bpy" in locals()
+
 import bpy
 import os
-import sys
-import importlib
 import traceback
 from bpy.props import (
     StringProperty,
@@ -45,21 +45,27 @@ from bpy.types import (
     UIList,
 )
 
-# Force-reload submodules on reinstall
-_submodules = [
-    "color_math",
-    "iterm_parser",
-    "blender_theme_map",
-    "xml_writer",
-    "apply",
-    "repo",
-    "popular",
-    "prefs",
-]
-for _mod_name in _submodules:
-    _full = f"{__package__}.{_mod_name}"
-    if _full in sys.modules:
-        importlib.reload(sys.modules[_full])
+from . import (
+    color_math,
+    iterm_parser,
+    blender_theme_map,
+    xml_writer,
+    apply,
+    repo,
+    popular,
+    prefs,
+)
+
+if _needs_reload:
+    import importlib
+    color_math = importlib.reload(color_math)
+    iterm_parser = importlib.reload(iterm_parser)
+    blender_theme_map = importlib.reload(blender_theme_map)
+    xml_writer = importlib.reload(xml_writer)
+    apply = importlib.reload(apply)
+    repo = importlib.reload(repo)
+    popular = importlib.reload(popular)
+    prefs = importlib.reload(prefs)
 
 
 # =========================================================================
@@ -212,33 +218,6 @@ def _populate_palette_from_iterm(wm, iterm_theme):
     wm.iterm_palette_theme_name = iterm_theme.get("name", "Unknown")
 
 
-def _snapshot_current_theme(wm):
-    """Save the current Blender theme to a temp XML file for later restore."""
-    import tempfile
-    try:
-        try:
-            from _rna_xml import rna2xml
-        except ImportError:
-            from rna_xml import rna2xml
-
-        theme = bpy.context.preferences.themes[0]
-        fd, path = tempfile.mkstemp(suffix=".xml", prefix="palette_snapshot_")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("<bpy>\n")
-            rna2xml(
-                f.write,
-                root_rna=theme,
-                method='ATTR',
-                root_ident="  ",
-                ident_val="  ",
-            )
-            f.write("</bpy>\n")
-        wm["_iterm_theme_snapshot"] = path
-    except Exception as ex:
-        print(f"[Palette] Theme snapshot failed: {ex}")
-        wm["_iterm_theme_snapshot"] = ""
-
-
 def _build_iterm_theme_from_palette(wm):
     """Reconstruct an iTerm theme dict from the editable palette."""
     theme = {
@@ -337,14 +316,10 @@ class ITERM_OT_apply_theme(Operator):
     theme_index: IntProperty(default=-1)
 
     def execute(self, context):
-        from . import iterm_parser, blender_theme_map, apply, xml_writer
+        from . import iterm_parser, blender_theme_map, apply
 
         wm = context.window_manager
         addon_prefs = context.preferences.addons[__package__].preferences
-
-        # Snapshot original theme before first apply
-        if "_iterm_theme_snapshot" not in wm:
-            _snapshot_current_theme(wm)
 
         idx = self.theme_index if self.theme_index >= 0 else wm.iterm_theme_active
         if idx < 0 or idx >= len(wm.iterm_themes):
@@ -359,18 +334,6 @@ class ITERM_OT_apply_theme(Operator):
             result = apply.apply_theme_to_blender(palette)
             if result is not True:
                 self.report({'WARNING'}, f"Apply issue: {result}")
-
-            if addon_prefs.export_xml:
-                try:
-                    xml_dir = os.path.join(bpy.utils.user_resource('CONFIG'), "themes")
-                    safe_name = "".join(
-                        c if c.isalnum() or c in (' ', '-', '_') else '_'
-                        for c in theme_item.name
-                    )
-                    xml_path = os.path.join(xml_dir, f"{safe_name}.xml")
-                    xml_writer.export_current_theme_xml(xml_path)
-                except Exception:
-                    pass
 
             if addon_prefs.save_on_apply:
                 apply.save_user_preferences()
@@ -424,7 +387,7 @@ class ITERM_OT_apply_custom_palette(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        from . import blender_theme_map, apply, xml_writer
+        from . import blender_theme_map, apply
 
         wm = context.window_manager
         addon_prefs = context.preferences.addons[__package__].preferences
@@ -439,19 +402,6 @@ class ITERM_OT_apply_custom_palette(Operator):
             result = apply.apply_theme_to_blender(palette)
             if result is not True:
                 self.report({'WARNING'}, f"Apply issue: {result}")
-
-            if addon_prefs.export_xml:
-                try:
-                    name = wm.iterm_palette_theme_name + " (Custom)"
-                    xml_dir = os.path.join(bpy.utils.user_resource('CONFIG'), "themes")
-                    safe_name = "".join(
-                        c if c.isalnum() or c in (' ', '-', '_') else '_'
-                        for c in name
-                    )
-                    xml_path = os.path.join(xml_dir, f"{safe_name}.xml")
-                    xml_writer.export_current_theme_xml(xml_path)
-                except Exception:
-                    pass
 
             if addon_prefs.save_on_apply:
                 apply.save_user_preferences()
@@ -651,60 +601,13 @@ class ITERM_OT_preview_swatches(Operator):
         return {'FINISHED'}
 
 
-class ITERM_OT_reset_theme(Operator):
-    """Reset Blender's theme back to what it was before Palette changed it"""
-    bl_idname = "iterm_theme.reset_theme"
-    bl_label = "Reset to Initial Theme"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        wm = context.window_manager
-        snapshot_path = wm.get("_iterm_theme_snapshot", "")
-
-        if not snapshot_path or not os.path.isfile(snapshot_path):
-            # No snapshot saved — reset to Blender factory default
-            bpy.ops.preferences.reset_default_theme()
-            self.report({'INFO'}, "Reset to Blender default theme")
-            return {'FINISHED'}
-
-        try:
-            bpy.ops.script.execute_preset(
-                filepath=snapshot_path,
-                menu_idname="USERPREF_MT_interface_theme_presets",
-            )
-            self.report({'INFO'}, "Restored initial theme")
-        except Exception:
-            # execute_preset failed — try direct rna_xml approach
-            try:
-                try:
-                    import _rna_xml as rna_xml
-                except ImportError:
-                    import rna_xml
-                preset_xml_map = (
-                    ("bpy.context.preferences.themes[0]", "Theme"),
-                )
-                rna_xml.xml_file_run(context, snapshot_path, preset_xml_map)
-                # Force UI redraw
-                for window in context.window_manager.windows:
-                    for area in window.screen.areas:
-                        area.tag_redraw()
-                self.report({'INFO'}, "Restored initial theme")
-            except Exception as e:
-                bpy.ops.preferences.reset_default_theme()
-                self.report({'WARNING'}, f"Snapshot restore failed, reset to default: {e}")
-
-        return {'FINISHED'}
 # =========================================================================
 
 class ITERM_UL_theme_list(UIList):
     bl_idname = "ITERM_UL_theme_list"
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
-        if self.layout_type in {'DEFAULT', 'COMPACT'}:
-            layout.label(text=item.name, icon='COLOR')
-        elif self.layout_type == 'GRID':
-            layout.alignment = 'CENTER'
-            layout.label(text="", icon='COLOR')
+        layout.label(text=item.name, icon='COLOR')
 
 
 # =========================================================================
@@ -732,7 +635,6 @@ classes = (
     ITERM_OT_export_theme_xml,
     ITERM_OT_search_themes,
     ITERM_OT_preview_swatches,
-    ITERM_OT_reset_theme,
     ITERM_UL_theme_list,
 )
 
@@ -758,10 +660,6 @@ def _on_theme_active_update(self, context):
         return
 
     wm = context.window_manager
-
-    # Snapshot the user's original theme on first preview
-    if "_iterm_theme_snapshot" not in wm:
-        _snapshot_current_theme(wm)
 
     idx = wm.iterm_theme_active
     if idx < 0 or idx >= len(wm.iterm_themes):

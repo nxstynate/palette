@@ -55,25 +55,18 @@ SOURCES = {
 
 
 def get_cache_dir():
-    """Get the cache directory path. Creates it if needed."""
+    """Get the cache directory path. Creates it if needed.
+
+    Uses Blender's extension_path_user which is the only approved
+    storage location for extensions platform add-ons.
+    """
+    import bpy
     try:
-        import bpy
-        # Use extension_path_user for extensions platform compatibility (Blender 4.2+)
         cache = bpy.utils.extension_path_user(__package__, path="cache", create=True)
-    except (ImportError, AttributeError, TypeError):
-        # Fallback for older Blender versions or running outside Blender
-        try:
-            import bpy
-            cache = os.path.join(
-                bpy.utils.user_resource('CONFIG'),
-                "iterm_theme_cache"
-            )
-        except ImportError:
-            cache = os.path.join(
-                os.path.expanduser("~"),
-                ".config", "blender", "iterm_theme_cache"
-            )
-    os.makedirs(cache, exist_ok=True)
+    except Exception as ex:
+        raise RuntimeError(
+            f"[Palette] Could not create extension cache directory: {ex}"
+        ) from ex
     return cache
 
 

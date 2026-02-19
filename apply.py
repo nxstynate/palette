@@ -91,11 +91,16 @@ def apply_theme_to_blender(palette):
     """
     Apply the palette to Blender's active theme via the Python API.
     Returns True on success, error string on failure.
+
+    Supports both Blender 4.x (per-editor theme settings) and 5.0+
+    (unified theme settings). The version is detected at runtime.
     """
     try:
         import bpy
     except ImportError:
         return "bpy not available - not running inside Blender"
+
+    _is_5 = bpy.app.version >= (5, 0, 0)
 
     theme = bpy.context.preferences.themes[0]
     p = palette
@@ -294,20 +299,23 @@ def apply_theme_to_blender(palette):
         _set_color(space, 'button_title', p["button_text"])
         _set_color(space, 'button_text', p["button_text"])
         _set_color(space, 'button_text_hi', p["button_text_hi"])
-        _set_color(space, 'navigation_bar', (*p["ui_panel"][:3], 1.0))
         _set_color(space, 'execution_buts', (*p["button_bg"][:3], 1.0))
-        _set_color(space, 'tab_active', p["tab_active_bg"])
-        _set_color(space, 'tab_inactive', p["tab_inactive_bg"])
-        _set_color(space, 'tab_back', p["ui_bg"])
-        _set_color(space, 'tab_outline', p["tab_outline"])
-        # Panel colors per-space
-        try:
-            pc = space.panelcolors
-            _set_color(pc, 'header', (*p["ui_panel_header"], 1.0))
-            _set_color(pc, 'back', (*p["ui_panel"], 0.7))
-            _set_color(pc, 'sub_back', (*p["ui_panel_sub"], 0.5))
-        except AttributeError:
-            pass
+
+        if not _is_5:
+            # 4.x per-editor properties — removed/unified in 5.0
+            _set_color(space, 'navigation_bar', (*p["ui_panel"][:3], 1.0))
+            _set_color(space, 'tab_active', p["tab_active_bg"])
+            _set_color(space, 'tab_inactive', p["tab_inactive_bg"])
+            _set_color(space, 'tab_back', p["ui_bg"])
+            _set_color(space, 'tab_outline', p["tab_outline"])
+            # Panel colors per-space
+            try:
+                pc = space.panelcolors
+                _set_color(pc, 'header', (*p["ui_panel_header"], 1.0))
+                _set_color(pc, 'back', (*p["ui_panel"], 0.7))
+                _set_color(pc, 'sub_back', (*p["ui_panel_sub"], 0.5))
+            except AttributeError:
+                pass
 
     def set_space_gradient(space):
         """Apply common space properties for ThemeSpaceGradient (3D viewport)."""
@@ -321,12 +329,16 @@ def apply_theme_to_blender(palette):
         _set_color(space, 'button_title', p["button_text"])
         _set_color(space, 'button_text', p["button_text"])
         _set_color(space, 'button_text_hi', p["button_text_hi"])
-        _set_color(space, 'navigation_bar', (*p["ui_panel"][:3], 1.0))
         _set_color(space, 'execution_buts', (*p["button_bg"][:3], 1.0))
-        _set_color(space, 'tab_active', p["tab_active_bg"])
-        _set_color(space, 'tab_inactive', p["tab_inactive_bg"])
-        _set_color(space, 'tab_back', p["ui_bg"])
-        _set_color(space, 'tab_outline', p["tab_outline"])
+
+        if not _is_5:
+            # 4.x per-editor properties — removed/unified in 5.0
+            _set_color(space, 'navigation_bar', (*p["ui_panel"][:3], 1.0))
+            _set_color(space, 'tab_active', p["tab_active_bg"])
+            _set_color(space, 'tab_inactive', p["tab_inactive_bg"])
+            _set_color(space, 'tab_back', p["ui_bg"])
+            _set_color(space, 'tab_outline', p["tab_outline"])
+
         # Gradients — this controls the 3D viewport canvas background
         try:
             grad = space.gradients
@@ -335,14 +347,16 @@ def apply_theme_to_blender(palette):
             _try_set(grad, 'background_type', 'SINGLE_COLOR')
         except AttributeError:
             pass
-        # Panel colors per-space
-        try:
-            pc = space.panelcolors
-            _set_color(pc, 'header', (*p["ui_panel_header"], 1.0))
-            _set_color(pc, 'back', (*p["ui_panel"], 0.7))
-            _set_color(pc, 'sub_back', (*p["ui_panel_sub"], 0.5))
-        except AttributeError:
-            pass
+
+        if not _is_5:
+            # Panel colors per-space (removed in 5.0)
+            try:
+                pc = space.panelcolors
+                _set_color(pc, 'header', (*p["ui_panel_header"], 1.0))
+                _set_color(pc, 'back', (*p["ui_panel"], 0.7))
+                _set_color(pc, 'sub_back', (*p["ui_panel_sub"], 0.5))
+            except AttributeError:
+                pass
 
     # =====================================================================
     # 3D VIEWPORT
@@ -350,13 +364,14 @@ def apply_theme_to_blender(palette):
     v3d = theme.view_3d
     set_space_gradient(v3d.space)
 
-    # Asset shelf
-    try:
-        ash = v3d.asset_shelf
-        _set_color(ash, 'header_back', p["header_bg"])
-        _set_color(ash, 'back', p["ui_bg"])
-    except AttributeError:
-        pass
+    # Asset shelf (per-editor in 4.x, unified in regions in 5.0)
+    if not _is_5:
+        try:
+            ash = v3d.asset_shelf
+            _set_color(ash, 'header_back', p["header_bg"])
+            _set_color(ash, 'back', p["ui_bg"])
+        except AttributeError:
+            pass
 
     _set_color(v3d, 'grid', p["grid_line"])
     _set_color(v3d, 'wire', p["wire_color"])
@@ -367,15 +382,26 @@ def apply_theme_to_blender(palette):
     _set_color(v3d, 'vertex_select', p["edge_select"])
     _set_color(v3d, 'vertex_unreferenced', p["danger"])
     _set_color(v3d, 'edge_select', p["edge_select"])
-    _set_color(v3d, 'edge_seam', p["danger"])
-    _set_color(v3d, 'edge_sharp', p["bright_cyan"])
-    _set_color(v3d, 'edge_crease', p["bright_magenta"])
-    _set_color(v3d, 'edge_bevel', p["bright_cyan"])
+
+    if _is_5:
+        # 5.0 renamed/combined these properties
+        _set_color(v3d, 'seam', p["danger"])
+        _set_color(v3d, 'sharp', p["bright_cyan"])
+        _set_color(v3d, 'crease', p["bright_magenta"])
+        _set_color(v3d, 'bevel', p["bright_cyan"])
+        _set_color(v3d, 'freestyle', p["success"])
+    else:
+        # 4.x names
+        _set_color(v3d, 'edge_seam', p["danger"])
+        _set_color(v3d, 'edge_sharp', p["bright_cyan"])
+        _set_color(v3d, 'edge_crease', p["bright_magenta"])
+        _set_color(v3d, 'edge_bevel', p["bright_cyan"])
+        _set_color(v3d, 'freestyle_edge_mark', p["success"])
+        _set_color(v3d, 'freestyle_face_mark', (*p["accent_secondary"], 0.4))
+
     _set_color(v3d, 'edge_facesel', p["ui_accent"])
     _set_color(v3d, 'face_select', (*p["ui_accent"], 0.25))
     _set_color(v3d, 'face_dot', p["ui_accent"])
-    _set_color(v3d, 'freestyle_edge_mark', p["success"])
-    _set_color(v3d, 'freestyle_face_mark', (*p["accent_secondary"], 0.4))
     _set_color(v3d, 'empty', p["ui_text_muted"])
     _set_color(v3d, 'camera', p["ui_text_muted"])
     _set_color(v3d, 'lamp', p["warning"])
@@ -389,9 +415,6 @@ def apply_theme_to_blender(palette):
     _set_color(v3d, 'bone_pose', p["accent_secondary"])
     _set_color(v3d, 'bone_pose_active', p["ui_accent"])
     _set_color(v3d, 'bone_locked_weight', (*p["danger"], 0.4))
-    _set_color(v3d, 'frame_current', p["success"])
-    _set_color(v3d, 'before_current_frame', p["before_frame"])
-    _set_color(v3d, 'after_current_frame', p["after_frame"])
     _set_color(v3d, 'transform', p["ui_accent"])
     _set_color(v3d, 'lastsel_point', p["ui_text_highlight"])
     _set_color(v3d, 'normal', p["accent_secondary"])
@@ -401,19 +424,26 @@ def apply_theme_to_blender(palette):
     _set_color(v3d, 'face_back', (*p["ui_accent"], 0.1))
     _set_color(v3d, 'face_front', (*p["ui_accent"], 0.2))
     _set_color(v3d, 'editmesh_active', (*p["ui_accent"], 0.5))
-    _set_color(v3d, 'handle_free', p["danger"])
-    _set_color(v3d, 'handle_auto', p["success"])
-    _set_color(v3d, 'handle_vect', p["accent_secondary"])
-    _set_color(v3d, 'handle_align', p["magenta"])
-    _set_color(v3d, 'handle_sel_free', p["danger"])
-    _set_color(v3d, 'handle_sel_auto', p["success"])
-    _set_color(v3d, 'handle_sel_vect', p["accent_secondary"])
-    _set_color(v3d, 'handle_sel_align', p["bright_magenta"])
+
+    if not _is_5:
+        # 4.x per-editor: frame_current, handles, act_spline moved to common in 5.0
+        _set_color(v3d, 'frame_current', p["success"])
+        _set_color(v3d, 'before_current_frame', p["before_frame"])
+        _set_color(v3d, 'after_current_frame', p["after_frame"])
+        _set_color(v3d, 'handle_free', p["danger"])
+        _set_color(v3d, 'handle_auto', p["success"])
+        _set_color(v3d, 'handle_vect', p["accent_secondary"])
+        _set_color(v3d, 'handle_align', p["magenta"])
+        _set_color(v3d, 'handle_sel_free', p["danger"])
+        _set_color(v3d, 'handle_sel_auto', p["success"])
+        _set_color(v3d, 'handle_sel_vect', p["accent_secondary"])
+        _set_color(v3d, 'handle_sel_align', p["bright_magenta"])
+        _set_color(v3d, 'act_spline', p["ui_accent"])
+
     _set_color(v3d, 'nurb_uline', p["accent_secondary"])
     _set_color(v3d, 'nurb_vline', p["magenta"])
     _set_color(v3d, 'nurb_sel_uline', p["obj_selected"])
     _set_color(v3d, 'nurb_sel_vline', p["bright_magenta"])
-    _set_color(v3d, 'act_spline', p["ui_accent"])
     _set_color(v3d, 'clipping_border_3d', (*p["warning"], 0.5))
     _set_color(v3d, 'view_overlay', p["ui_text"])
     _set_color(v3d, 'paint_curve_pivot', p["danger"])
@@ -471,27 +501,31 @@ def apply_theme_to_blender(palette):
     set_space_generic(theme.graph_editor.space)
     ge = theme.graph_editor
     _set_color(ge, 'grid', p["grid_line"])
-    _set_color(ge, 'frame_current', p["success"])
-    _set_color(ge, 'handle_free', p["danger"])
-    _set_color(ge, 'handle_auto', p["success"])
-    _set_color(ge, 'handle_vect', p["accent_secondary"])
-    _set_color(ge, 'handle_align', p["magenta"])
-    _set_color(ge, 'handle_sel_free', p["danger"])
-    _set_color(ge, 'handle_sel_auto', p["success"])
-    _set_color(ge, 'handle_sel_vect', p["accent_secondary"])
-    _set_color(ge, 'handle_sel_align', p["bright_magenta"])
-    _set_color(ge, 'handle_auto_clamped', p["warning"])
-    _set_color(ge, 'handle_sel_auto_clamped', p["warning"])
+
+    if not _is_5:
+        # 4.x per-editor: frame_current, channels, handles moved to common in 5.0
+        _set_color(ge, 'frame_current', p["success"])
+        _set_color(ge, 'handle_free', p["danger"])
+        _set_color(ge, 'handle_auto', p["success"])
+        _set_color(ge, 'handle_vect', p["accent_secondary"])
+        _set_color(ge, 'handle_align', p["magenta"])
+        _set_color(ge, 'handle_sel_free', p["danger"])
+        _set_color(ge, 'handle_sel_auto', p["success"])
+        _set_color(ge, 'handle_sel_vect', p["accent_secondary"])
+        _set_color(ge, 'handle_sel_align', p["bright_magenta"])
+        _set_color(ge, 'handle_auto_clamped', p["warning"])
+        _set_color(ge, 'handle_sel_auto_clamped', p["warning"])
+        _set_color(ge, 'channel_group', (*p["accent_secondary"], 0.3))
+        _set_color(ge, 'active_channels_group', (*p["ui_accent"], 0.3))
+        _set_color(ge, 'dopesheet_channel', (*p["ui_panel"], 0.5))
+        _set_color(ge, 'dopesheet_subchannel', (*p["ui_card"], 0.5))
+        _set_color(ge, 'channels_region', p["ui_panel"])
+
     _set_color(ge, 'lastsel_point', p["ui_text_highlight"])
     _set_color(ge, 'handle_vertex', p["vertex_color"])
     _set_color(ge, 'handle_vertex_select', p["edge_select"])
     _try_set(ge, 'handle_vertex_size', 4)
-    _set_color(ge, 'channel_group', (*p["accent_secondary"], 0.3))
-    _set_color(ge, 'active_channels_group', (*p["ui_accent"], 0.3))
-    _set_color(ge, 'dopesheet_channel', (*p["ui_panel"], 0.5))
-    _set_color(ge, 'dopesheet_subchannel', (*p["ui_card"], 0.5))
     _set_color(ge, 'window_sliders', p["ui_accent"])
-    _set_color(ge, 'channels_region', p["ui_panel"])
 
     # =====================================================================
     # DOPESHEET EDITOR
@@ -499,33 +533,36 @@ def apply_theme_to_blender(palette):
     set_space_generic(theme.dopesheet_editor.space)
     de = theme.dopesheet_editor
     _set_color(de, 'grid', p["grid_line"])
-    _set_color(de, 'frame_current', p["success"])
-    _set_color(de, 'value_sliders', (*p["ui_accent"], 0.3))
-    _set_color(de, 'view_sliders', (*p["accent_secondary"], 0.3))
-    _set_color(de, 'dopesheet_channel', (*p["ui_panel"], 0.5))
-    _set_color(de, 'dopesheet_subchannel', (*p["ui_card"], 0.5))
-    _set_color(de, 'channel_group', (*p["accent_secondary"], 0.3))
-    _set_color(de, 'active_channels_group', (*p["ui_accent"], 0.3))
-    _set_color(de, 'long_key', (*p["magenta"], 0.3))
-    _set_color(de, 'long_key_selected', (*p["bright_magenta"], 0.3))
-    _set_color(de, 'keyframe', p["warning"])
-    _set_color(de, 'keyframe_selected', p["ui_accent"])
-    _set_color(de, 'keyframe_extreme', p["danger"])
-    _set_color(de, 'keyframe_extreme_selected', p["danger"])
-    _set_color(de, 'keyframe_breakdown', p["accent_secondary"])
-    _set_color(de, 'keyframe_breakdown_selected', p["accent_secondary"])
-    _set_color(de, 'keyframe_jitter', p["success"])
-    _set_color(de, 'keyframe_jitter_selected', p["success"])
-    _set_color(de, 'keyframe_movehold', p["magenta"])
-    _set_color(de, 'keyframe_movehold_selected', p["bright_magenta"])
-    _set_color(de, 'keyframe_border', p["ui_border"])
-    _set_color(de, 'keyframe_border_selected', p["ui_text"])
-    _set_color(de, 'summary', (*p["ui_accent"], 0.3))
-    _set_color(de, 'channels_region', p["ui_panel"])
-    _set_color(de, 'window_sliders', p["ui_accent"])
-    _set_color(de, 'time_scrub_background', (*p["ui_panel"], 0.75))
-    _set_color(de, 'time_marker_line', (*p["warning"], 0.5))
-    _set_color(de, 'time_marker_line_selected', (*p["ui_accent"], 0.8))
+
+    if not _is_5:
+        # 4.x per-editor: frame_current, keyframes, channels moved to common in 5.0
+        _set_color(de, 'frame_current', p["success"])
+        _set_color(de, 'value_sliders', (*p["ui_accent"], 0.3))
+        _set_color(de, 'view_sliders', (*p["accent_secondary"], 0.3))
+        _set_color(de, 'dopesheet_channel', (*p["ui_panel"], 0.5))
+        _set_color(de, 'dopesheet_subchannel', (*p["ui_card"], 0.5))
+        _set_color(de, 'channel_group', (*p["accent_secondary"], 0.3))
+        _set_color(de, 'active_channels_group', (*p["ui_accent"], 0.3))
+        _set_color(de, 'long_key', (*p["magenta"], 0.3))
+        _set_color(de, 'long_key_selected', (*p["bright_magenta"], 0.3))
+        _set_color(de, 'keyframe', p["warning"])
+        _set_color(de, 'keyframe_selected', p["ui_accent"])
+        _set_color(de, 'keyframe_extreme', p["danger"])
+        _set_color(de, 'keyframe_extreme_selected', p["danger"])
+        _set_color(de, 'keyframe_breakdown', p["accent_secondary"])
+        _set_color(de, 'keyframe_breakdown_selected', p["accent_secondary"])
+        _set_color(de, 'keyframe_jitter', p["success"])
+        _set_color(de, 'keyframe_jitter_selected', p["success"])
+        _set_color(de, 'keyframe_movehold', p["magenta"])
+        _set_color(de, 'keyframe_movehold_selected', p["bright_magenta"])
+        _set_color(de, 'keyframe_border', p["ui_border"])
+        _set_color(de, 'keyframe_border_selected', p["ui_text"])
+        _set_color(de, 'summary', (*p["ui_accent"], 0.3))
+        _set_color(de, 'channels_region', p["ui_panel"])
+        _set_color(de, 'window_sliders', p["ui_accent"])
+        _set_color(de, 'time_scrub_background', (*p["ui_panel"], 0.75))
+        _set_color(de, 'time_marker_line', (*p["warning"], 0.5))
+        _set_color(de, 'time_marker_line_selected', (*p["ui_accent"], 0.8))
 
     # =====================================================================
     # NODE EDITOR
@@ -569,7 +606,6 @@ def apply_theme_to_blender(palette):
     set_space_generic(theme.nla_editor.space)
     nla = theme.nla_editor
     _set_color(nla, 'grid', p["grid_line"])
-    _set_color(nla, 'frame_current', p["success"])
     _set_color(nla, 'strips', p["nla_strip"])
     _set_color(nla, 'strips_selected', p["nla_strip_selected"])
     _set_color(nla, 'transition_strips', p["nla_transition"])
@@ -580,14 +616,18 @@ def apply_theme_to_blender(palette):
     _set_color(nla, 'sound_strips_selected', p["nla_strip_selected"])
     _set_color(nla, 'tweak', p["nla_tweak"])
     _set_color(nla, 'tweak_duplicate', p["nla_tweak_dup"])
-    _set_color(nla, 'keyframe_border', p["ui_border"])
-    _set_color(nla, 'keyframe_border_selected', p["ui_text"])
-    _set_color(nla, 'view_sliders', p["ui_accent"])
-    _set_color(nla, 'dopesheet_channel', (*p["ui_panel"], 0.5))
-    _set_color(nla, 'dopesheet_subchannel', (*p["ui_card"], 0.5))
-    _set_color(nla, 'time_scrub_background', (*p["ui_panel"], 0.75))
-    _set_color(nla, 'time_marker_line', (*p["warning"], 0.5))
-    _set_color(nla, 'time_marker_line_selected', (*p["ui_accent"], 0.8))
+
+    if not _is_5:
+        # 4.x per-editor: frame_current, keyframes, channels, scrubbing moved to common in 5.0
+        _set_color(nla, 'frame_current', p["success"])
+        _set_color(nla, 'keyframe_border', p["ui_border"])
+        _set_color(nla, 'keyframe_border_selected', p["ui_text"])
+        _set_color(nla, 'view_sliders', p["ui_accent"])
+        _set_color(nla, 'dopesheet_channel', (*p["ui_panel"], 0.5))
+        _set_color(nla, 'dopesheet_subchannel', (*p["ui_card"], 0.5))
+        _set_color(nla, 'time_scrub_background', (*p["ui_panel"], 0.75))
+        _set_color(nla, 'time_marker_line', (*p["warning"], 0.5))
+        _set_color(nla, 'time_marker_line_selected', (*p["ui_accent"], 0.8))
 
     # =====================================================================
     # TIMELINE
@@ -596,10 +636,11 @@ def apply_theme_to_blender(palette):
         set_space_generic(theme.timeline.space)
         tl = theme.timeline
         _set_color(tl, 'grid', p["grid_line"])
-        _set_color(tl, 'frame_current', p["success"])
-        _set_color(tl, 'time_scrub_background', (*p["ui_panel"], 0.75))
-        _set_color(tl, 'time_marker_line', (*p["warning"], 0.5))
-        _set_color(tl, 'time_marker_line_selected', (*p["ui_accent"], 0.8))
+        if not _is_5:
+            _set_color(tl, 'frame_current', p["success"])
+            _set_color(tl, 'time_scrub_background', (*p["ui_panel"], 0.75))
+            _set_color(tl, 'time_marker_line', (*p["warning"], 0.5))
+            _set_color(tl, 'time_marker_line_selected', (*p["ui_accent"], 0.8))
     except AttributeError:
         pass
 
@@ -683,13 +724,17 @@ def apply_theme_to_blender(palette):
     _set_color(ie, 'face_dot', p["ui_accent"])
     _set_color(ie, 'editmesh_active', (*p["ui_accent"], 0.5))
     _set_color(ie, 'wire_edit', p["wire_edit"])
-    _set_color(ie, 'frame_current', p["success"])
-    _set_color(ie, 'handle_free', p["danger"])
-    _set_color(ie, 'handle_auto', p["success"])
-    _set_color(ie, 'handle_align', p["magenta"])
-    _set_color(ie, 'handle_sel_free', p["danger"])
-    _set_color(ie, 'handle_sel_auto', p["success"])
-    _set_color(ie, 'handle_sel_align', p["bright_magenta"])
+
+    if not _is_5:
+        # 4.x per-editor: frame_current, handles moved to common in 5.0
+        _set_color(ie, 'frame_current', p["success"])
+        _set_color(ie, 'handle_free', p["danger"])
+        _set_color(ie, 'handle_auto', p["success"])
+        _set_color(ie, 'handle_align', p["magenta"])
+        _set_color(ie, 'handle_sel_free', p["danger"])
+        _set_color(ie, 'handle_sel_auto', p["success"])
+        _set_color(ie, 'handle_sel_align', p["bright_magenta"])
+
     _set_color(ie, 'paint_curve_pivot', p["danger"])
     _set_color(ie, 'paint_curve_handle', p["success"])
     _set_color(ie, 'uv_shadow', (*p["ui_text_disabled"], 0.3))
@@ -702,8 +747,6 @@ def apply_theme_to_blender(palette):
     set_space_generic(theme.sequence_editor.space)
     se = theme.sequence_editor
     _set_color(se, 'grid', p["grid_line"])
-    _set_color(se, 'frame_current', p["success"])
-    _set_color(se, 'keyframe', p["warning"])
     _set_color(se, 'draw_action', (*p["ui_accent"], 0.5))
     _set_color(se, 'movie_strip', (*p["accent_secondary"], 0.5))
     _set_color(se, 'movieclip_strip', (*p["magenta"], 0.5))
@@ -717,9 +760,14 @@ def apply_theme_to_blender(palette):
     _set_color(se, 'text_strip', (*p["ui_text"], 0.5))
     _set_color(se, 'active_strip', (*p["obj_active"], 0.5))
     _set_color(se, 'selected_strip', (*p["obj_selected"], 0.5))
-    _set_color(se, 'time_scrub_background', (*p["ui_panel"], 0.75))
     _set_color(se, 'row_alternate', (*p["row_alternate"][:3], 0.5))
     _set_color(se, 'window_sliders', p["ui_accent"])
+
+    if not _is_5:
+        # 4.x per-editor: frame_current, keyframe, scrubbing moved to common in 5.0
+        _set_color(se, 'frame_current', p["success"])
+        _set_color(se, 'keyframe', p["warning"])
+        _set_color(se, 'time_scrub_background', (*p["ui_panel"], 0.75))
 
     # =====================================================================
     # CLIP EDITOR
@@ -727,7 +775,6 @@ def apply_theme_to_blender(palette):
     set_space_generic(theme.clip_editor.space)
     ce = theme.clip_editor
     _set_color(ce, 'grid', p["grid_line"])
-    _set_color(ce, 'frame_current', p["success"])
     _set_color(ce, 'marker_outline', p["ui_border"])
     _set_color(ce, 'marker', p["ui_accent"])
     _set_color(ce, 'active_marker', p["obj_active"])
@@ -743,7 +790,87 @@ def apply_theme_to_blender(palette):
     _set_color(ce, 'path_keyframe_after', p["accent_secondary"])
     _set_color(ce, 'strips', p["ui_accent"])
     _set_color(ce, 'strips_selected', p["obj_selected"])
-    _set_color(ce, 'time_scrub_background', (*p["ui_panel"], 0.75))
+
+    if not _is_5:
+        # 4.x per-editor: frame_current, scrubbing moved to common in 5.0
+        _set_color(ce, 'frame_current', p["success"])
+        _set_color(ce, 'time_scrub_background', (*p["ui_panel"], 0.75))
+
+    # =====================================================================
+    # BLENDER 5.0+ UNIFIED THEME SETTINGS
+    # =====================================================================
+    if _is_5:
+        # --- Regions: Sidebars ---
+        sb = theme.regions.sidebars
+        _set_color(sb, 'back', (*p["button_bg"][:3], 1.0))
+        _set_color(sb, 'tab_back', p["ui_bg"])
+
+        # --- Regions: Channels ---
+        ch = theme.regions.channels
+        _set_color(ch, 'back', p["ui_panel"])
+        _set_color(ch, 'text', p["ui_text"])
+        _set_color(ch, 'text_selected', p["ui_text_highlight"])
+
+        # --- Regions: Scrubbing / Markers ---
+        scr = theme.regions.scrubbing
+        _set_color(scr, 'back', (*p["ui_panel"], 0.75))
+        _set_color(scr, 'text', p["ui_text_muted"])
+        _set_color(scr, 'time_marker', (*p["warning"], 0.5))
+        _set_color(scr, 'time_marker_selected', (*p["ui_accent"], 0.8))
+
+        # --- Regions: Asset Shelf ---
+        ash = theme.regions.asset_shelf
+        _set_color(ash, 'header_back', p["header_bg"])
+        _set_color(ash, 'back', p["ui_bg"])
+
+        # --- Common: Animation ---
+        anim = theme.common.anim
+        _set_color(anim, 'playhead', p["success"])
+        _set_color(anim, 'preview_range', (*p["ui_accent"], 0.3))
+        _set_color(anim, 'channels', (*p["ui_panel"], 0.5))
+        _set_color(anim, 'channels_sub', (*p["ui_card"], 0.5))
+        _set_color(anim, 'channel_group', (*p["accent_secondary"], 0.3))
+        _set_color(anim, 'channel_group_active', (*p["ui_accent"], 0.3))
+        _set_color(anim, 'channel', p["ui_panel"])
+        _set_color(anim, 'channel_selected', p["list_highlight"])
+        _set_color(anim, 'keyframe', p["warning"])
+        _set_color(anim, 'keyframe_selected', p["ui_accent"])
+        _set_color(anim, 'keyframe_breakdown', p["accent_secondary"])
+        _set_color(anim, 'keyframe_breakdown_selected', p["accent_secondary"])
+        _set_color(anim, 'keyframe_extreme', p["danger"])
+        _set_color(anim, 'keyframe_extreme_selected', p["danger"])
+        _set_color(anim, 'keyframe_jitter', p["success"])
+        _set_color(anim, 'keyframe_jitter_selected', p["success"])
+        _set_color(anim, 'keyframe_moving_hold', p["magenta"])
+        _set_color(anim, 'keyframe_moving_hold_selected', p["bright_magenta"])
+        _set_color(anim, 'keyframe_generated', p["ui_text_muted"])
+        _set_color(anim, 'keyframe_generated_selected', p["ui_text_highlight"])
+        _set_color(anim, 'long_key', (*p["magenta"], 0.3))
+        _set_color(anim, 'long_key_selected', (*p["bright_magenta"], 0.3))
+
+        # --- Common: Curves (handles) ---
+        crv = theme.common.curves
+        _set_color(crv, 'handle_free', p["danger"])
+        _set_color(crv, 'handle_sel_free', p["danger"])
+        _set_color(crv, 'handle_auto', p["success"])
+        _set_color(crv, 'handle_sel_auto', p["success"])
+        _set_color(crv, 'handle_vect', p["accent_secondary"])
+        _set_color(crv, 'handle_sel_vect', p["accent_secondary"])
+        _set_color(crv, 'handle_align', p["magenta"])
+        _set_color(crv, 'handle_sel_align', p["bright_magenta"])
+        _set_color(crv, 'handle_auto_clamped', p["warning"])
+        _set_color(crv, 'handle_sel_auto_clamped', p["warning"])
+        _set_color(crv, 'handle_vertex', p["vertex_color"])
+        _set_color(crv, 'handle_vertex_select', p["edge_select"])
+        _try_set(crv, 'handle_vertex_size', 4)
+
+        # --- User Interface: 5.0 panel properties ---
+        # (panel_back, panel_header, panel_sub_back already set above
+        #  in the shared UI section — these are the NEW 5.0 properties)
+        _set_color(ui, 'panel_active', (*p["ui_accent"][:3], 0.15))
+        _set_color(ui, 'panel_outline', (*p["ui_panel_outline"][:3], 0.5))
+        _set_color(ui, 'editor_outline', p["ui_border"])
+        _set_color(ui, 'editor_outline_active', p["ui_accent"])
 
     # =====================================================================
     # FORCE UI REDRAW
