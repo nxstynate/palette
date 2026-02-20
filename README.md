@@ -36,7 +36,7 @@ Once loaded, the full list of themes will appear and you can start browsing.
 1. Click any theme in the list to preview it. If **Live Preview** is enabled (it is by default), the Blender UI will update immediately.
 2. Use the search bar to filter themes by name.
 3. When you've found one you like, click **Apply** to set it as your theme.
-4. If you change your mind, click **Reset** to go back to whatever theme you had before.
+4. If you change your mind, click **Reset** to restore Blender's default theme.
 
 ### Save Your Theme
 
@@ -65,8 +65,7 @@ To start editing, expand the Palette Editor section and click **Edit Colors** (o
 
 - **Live Preview** — Preview themes instantly when selecting them in the list. No files are written to disk during preview. Enabled by default.
 - **Save Preferences on Apply** — Automatically save your Blender preferences when you apply a theme, so it persists across restarts.
-- **Export XML on Apply** — Automatically export a Blender theme XML file when applying a theme.
-- **Export XML** — Manually export the current theme as a Blender XML file. This file can be shared with others or installed through Blender's built-in theme installer (**Preferences → Themes → Install**).
+- **Export Theme XML** — Manually export the current theme as a Blender XML file. This uses Blender's native theme serializer, so the output is fully compatible with Blender's built-in theme installer (**Preferences → Themes → Install**).
 - **Theme Sources** — Choose between fetching from remote repositories or loading from a local folder of theme files (`.itermcolors`, `.yml`, `.yaml`). You can enable or disable the iTerm2 and Gogh repositories independently.
 
 ---
@@ -78,7 +77,7 @@ To start editing, expand the Palette Editor section and click **Edit Colors** (o
 3. The add-on maps this palette to Blender's complete theme system using perceptual color math (OKLCH) to generate surfaces, borders, text colors, accents, and contrast-checked UI elements.
 4. The generated theme is applied to your active Blender session.
 
-Downloaded themes are cached locally in your Blender configuration directory so you don't need to re-download them every time.
+Downloaded themes are cached locally in the extension's user data directory so you don't need to re-download them every time.
 
 ---
 
@@ -99,7 +98,7 @@ Each theme retains its original name and attribution. Please refer to the respec
 
 ## Requirements
 
-- Blender 4.5 or later
+- Blender 4.5 or later (full support for both 4.5 LTS and 5.0+)
 - Internet connection (for initial theme download only)
 
 ---
