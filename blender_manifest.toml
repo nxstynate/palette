@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "palette"
-version = "1.1.4"
+version = "1.1.5"
 name = "Palette"
 tagline = "Load 600+ terminal palettes as complete Blender UI themes"
 maintainer = "NXSTYNATE"
