@@ -879,13 +879,3 @@ def apply_theme_to_blender(palette):
         area.tag_redraw()
 
     return True
-
-
-def save_user_preferences():
-    """Save current preferences (including theme) as startup."""
-    try:
-        import bpy
-        bpy.ops.wm.save_userpref()
-        return True
-    except Exception as e:
-        return str(e)

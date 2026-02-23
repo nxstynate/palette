@@ -64,8 +64,6 @@ To start editing, expand the Palette Editor section and click **Edit Colors** (o
 ### Settings
 
 - **Live Preview** — Preview themes instantly when selecting them in the list. No files are written to disk during preview. Enabled by default.
-- **Save Preferences on Apply** — Automatically save your Blender preferences when you apply a theme, so it persists across restarts.
-- **Export Theme XML** — Manually export the current theme as a Blender XML file. This uses Blender's native theme serializer, so the output is fully compatible with Blender's built-in theme installer (**Preferences → Themes → Install**).
 - **Theme Sources** — Choose between fetching from remote repositories or loading from a local folder of theme files (`.itermcolors`, `.yml`, `.yaml`). You can enable or disable the iTerm2 and Gogh repositories independently.
 
 ---

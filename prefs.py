@@ -68,13 +68,6 @@ class ItermThemeImporterPrefs(bpy.types.AddonPreferences):
         subtype='DIR_PATH',
     )
 
-    # --- Behavior ---
-    save_on_apply: BoolProperty(
-        name="Save Preferences on Apply",
-        description="Automatically save user preferences when applying a theme",
-        default=False,
-    )
-
     live_preview: BoolProperty(
         name="Live Preview",
         description="Preview themes instantly when clicking in the list (no disk writes)",
@@ -213,15 +206,6 @@ class ItermThemeImporterPrefs(bpy.types.AddonPreferences):
         if box is not None:
             # Preview
             box.prop(self, "live_preview")
-
-            # On-apply behavior
-            box.separator()
-            box.label(text="On Apply:")
-            box.prop(self, "save_on_apply")
-
-            # Export
-            box.separator()
-            box.operator("iterm_theme.export_xml", text="Export Theme XML", icon='EXPORT')
 
             # Theme sources
             box.separator()

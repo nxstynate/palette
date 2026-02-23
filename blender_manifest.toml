@@ -23,4 +23,12 @@ copyright = [
 
 [permissions]
 network = "Downloads color schemes from GitHub repositories"
-files = "Caches themes locally and exports Blender XML files"
+files = "Caches themes locally"
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  ".*",
+  "*.zip",
+  "assets/",
+]

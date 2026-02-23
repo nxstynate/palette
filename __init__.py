@@ -49,7 +49,6 @@ from . import (
     color_math,
     iterm_parser,
     blender_theme_map,
-    xml_writer,
     apply,
     repo,
     popular,
@@ -61,7 +60,6 @@ if _needs_reload:
     color_math = importlib.reload(color_math)
     iterm_parser = importlib.reload(iterm_parser)
     blender_theme_map = importlib.reload(blender_theme_map)
-    xml_writer = importlib.reload(xml_writer)
     apply = importlib.reload(apply)
     repo = importlib.reload(repo)
     popular = importlib.reload(popular)
@@ -319,7 +317,6 @@ class ITERM_OT_apply_theme(Operator):
         from . import iterm_parser, blender_theme_map, apply
 
         wm = context.window_manager
-        addon_prefs = context.preferences.addons[__package__].preferences
 
         idx = self.theme_index if self.theme_index >= 0 else wm.iterm_theme_active
         if idx < 0 or idx >= len(wm.iterm_themes):
@@ -334,9 +331,6 @@ class ITERM_OT_apply_theme(Operator):
             result = apply.apply_theme_to_blender(palette)
             if result is not True:
                 self.report({'WARNING'}, f"Apply issue: {result}")
-
-            if addon_prefs.save_on_apply:
-                apply.save_user_preferences()
 
             # Also populate the palette editor
             _populate_palette_from_iterm(wm, iterm_theme)
@@ -390,7 +384,6 @@ class ITERM_OT_apply_custom_palette(Operator):
         from . import blender_theme_map, apply
 
         wm = context.window_manager
-        addon_prefs = context.preferences.addons[__package__].preferences
 
         if not wm.iterm_palette_loaded or len(wm.iterm_palette) == 0:
             self.report({'ERROR'}, "No palette loaded. Load a theme first.")
@@ -402,9 +395,6 @@ class ITERM_OT_apply_custom_palette(Operator):
             result = apply.apply_theme_to_blender(palette)
             if result is not True:
                 self.report({'WARNING'}, f"Apply issue: {result}")
-
-            if addon_prefs.save_on_apply:
-                apply.save_user_preferences()
 
             self.report({'INFO'}, "Applied custom palette")
 
@@ -461,78 +451,6 @@ class ITERM_OT_swap_colors(Operator):
         pal[b].hex_value = _hex_from_rgb(*ca)
 
         self.report({'INFO'}, f"Swapped {pal[a].label} ↔ {pal[b].label}")
-        return {'FINISHED'}
-
-
-class ITERM_OT_export_theme_xml(Operator):
-    """Export the selected theme as a Blender theme XML file"""
-    bl_idname = "iterm_theme.export_xml"
-    bl_label = "Export Theme XML"
-    bl_options = {'REGISTER'}
-
-    filepath: StringProperty(
-        name="File Path",
-        description="Path to save the theme XML file",
-        subtype='FILE_PATH',
-    )
-
-    filter_glob: StringProperty(
-        default="*.xml",
-        options={'HIDDEN'},
-    )
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        idx = wm.iterm_theme_active
-        if idx < 0 or idx >= len(wm.iterm_themes):
-            self.report({'ERROR'}, "No theme selected")
-            return {'CANCELLED'}
-
-        # Set default filename
-        theme_item = wm.iterm_themes[idx]
-        safe_name = "".join(
-            c if c.isalnum() or c in (' ', '-', '_') else '_'
-            for c in theme_item.name
-        )
-        self.filepath = safe_name + ".xml"
-
-        context.window_manager.fileselect_add(self)
-        return {'RUNNING_MODAL'}
-
-    def execute(self, context):
-        from . import iterm_parser, blender_theme_map, apply, xml_writer
-
-        wm = context.window_manager
-        idx = wm.iterm_theme_active
-        if idx < 0 or idx >= len(wm.iterm_themes):
-            self.report({'ERROR'}, "No theme selected")
-            return {'CANCELLED'}
-
-        theme_item = wm.iterm_themes[idx]
-
-        try:
-            # If the palette editor has custom colors, use those.
-            # Otherwise fall back to the original theme file.
-            if wm.iterm_palette_loaded and len(wm.iterm_palette) > 0:
-                iterm_theme = _build_iterm_theme_from_palette(wm)
-            else:
-                iterm_theme = iterm_parser.parse_theme_file(theme_item.path)
-
-            palette = blender_theme_map.build_palette(iterm_theme)
-            apply.apply_theme_to_blender(palette)
-
-            # Ensure .xml extension
-            filepath = self.filepath
-            if not filepath.lower().endswith('.xml'):
-                filepath += '.xml'
-
-            xml_writer.export_current_theme_xml(filepath)
-            self.report({'INFO'}, f"Exported: {filepath}")
-        except Exception as e:
-            self.report({'ERROR'}, f"Export failed: {e}")
-            traceback.print_exc()
-            return {'CANCELLED'}
-
         return {'FINISHED'}
 
 
@@ -632,7 +550,6 @@ classes = (
     ITERM_OT_apply_custom_palette,
     ITERM_OT_reset_palette,
     ITERM_OT_swap_colors,
-    ITERM_OT_export_theme_xml,
     ITERM_OT_search_themes,
     ITERM_OT_preview_swatches,
     ITERM_UL_theme_list,
