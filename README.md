@@ -2,6 +2,7 @@
 
 ### Watch video
 [![Palette Demo](assets/palette_logo_dark.svg)](https://www.youtube.com/watch?v=cgVgi_flVYI)
+
 **Click Image to Watch Video**
 
 **Access over 600 terminal color schemes as Blender themes.**
