@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 420" width="680" height="420">
+  <rect x="0" y="0" width="680" height="420" fill="#282828"/>
+
+  <!-- Row 1 -->
+  <rect x="236" y="80"  width="48" height="48" rx="4" fill="#3c3836"/>
+  <rect x="288" y="80"  width="48" height="48" rx="4" fill="#cc241d"/>
+  <rect x="340" y="80"  width="48" height="48" rx="4" fill="#98971a"/>
+  <rect x="392" y="80"  width="48" height="48" rx="4" fill="#d79921"/>
+
+  <!-- Row 2 -->
+  <rect x="236" y="132" width="48" height="48" rx="4" fill="#458588"/>
+  <rect x="288" y="132" width="48" height="48" rx="4" fill="#b16286"/>
+  <rect x="340" y="132" width="48" height="48" rx="4" fill="#689d6a"/>
+  <rect x="392" y="132" width="48" height="48" rx="4" fill="#a89984"/>
+
+  <!-- Row 3 -->
+  <rect x="236" y="184" width="48" height="48" rx="4" fill="#928374"/>
+  <rect x="288" y="184" width="48" height="48" rx="4" fill="#fb4934"/>
+  <rect x="340" y="184" width="48" height="48" rx="4" fill="#b8bb26"/>
+  <rect x="392" y="184" width="48" height="48" rx="4" fill="#fabd2f"/>
+
+  <!-- Row 4 -->
+  <rect x="236" y="236" width="48" height="48" rx="4" fill="#83a598"/>
+  <rect x="288" y="236" width="48" height="48" rx="4" fill="#d3869b"/>
+  <rect x="340" y="236" width="48" height="48" rx="4" fill="#8ec07c"/>
+  <rect x="392" y="236" width="48" height="48" rx="4" fill="#ebdbb2"/>
+
+  <!-- Wordmark -->
+  <text x="340" y="340" text-anchor="middle"
+    font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace"
+    font-size="42" font-weight="500" fill="#ebdbb2" letter-spacing="2">palette</text>
+  <text x="340" y="370" text-anchor="middle"
+    font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace"
+    font-size="13" fill="#928374" letter-spacing="4">BLENDER · ANSI · THEMES</text>
+</svg>
